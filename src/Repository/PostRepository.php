@@ -40,12 +40,19 @@ class PostRepository extends ServiceEntityRepository
         }
     }
 
-    public function allPosts($active = 1, $page = 1)
+    public function allPosts($active = 1, $page = 1, $day = null)
     {
         $qb = $this->createQueryBuilder('p')
             ->where('p.status = ' . $active)
             ->orderBy('p.id', 'DESC')
         ;
+        if($day != null){
+            $day = new \DateTime($day);
+            $qb->where('p.created_at > :from')
+                ->andWhere('p.created_at < :to')
+                ->setParameter('from', $day->format('Y-m-d') . ' 00:00:00')
+                ->setParameter('to', $day->format('Y-m-d') . ' 23:59:59');
+        }
         $query = $qb->getQuery();
 
         $paginator = new Paginator($query);

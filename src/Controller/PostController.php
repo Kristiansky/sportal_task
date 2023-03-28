@@ -21,7 +21,7 @@ class PostController extends AbstractController
     {
         $posts = $this->getDoctrine()
             ->getRepository(Post::class)
-            ->allPosts($request->query->get('active') ?? 1, $request->query->get('page') ?? 1);
+            ->allPosts($request->query->get('active') ?? 1, $request->query->get('page') ?? 1, $request->query->get('day'));
 
         $data = [];
 
