@@ -1,11 +1,11 @@
 # Sportal task
 ### Instructions:
 #### 1. Clone the project locally
-#### 2. Run `composer install`
-#### 3. Replace `.env.example` with as new file `.env` and include `APP_SECRET` and uncomment `DATABASE_URL` and replace the url with your credentials
+#### 2. Run ```composer install```
+#### 3. Replace ```.env.example``` with as new file ```.env``` and include ```APP_SECRET``` and uncomment ```DATABASE_URL``` and replace the url with your credentials
 #### 4. Run the migrations
-#### 5. Run `symfony serve -d`
-#### 6. Access `/seed_posts` path from browser client/postman for inserting example db data 
+#### 5. Run ```symfony serve -d```
+#### 6. Access ```/seed_posts``` path from browser client/postman for inserting example db data 
 
 ---
 ## Endpoints
