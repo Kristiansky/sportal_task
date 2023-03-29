@@ -34,7 +34,7 @@ class PostController extends AbstractController
                 'status' => $post->isStatus(),
             ];
         }
-        if($request->query->get('format') == 'csv'){
+        if($request->query->get('format') == 'csv') {
             $fp = fopen('php://temp', 'w');
             foreach ($data as $datum) {
                 fputcsv($fp, $datum);
@@ -46,7 +46,7 @@ class PostController extends AbstractController
             $response->headers->set('Content-Disposition', 'attachment; filename="export.csv"');
 
             return $response;
-        } elseif ($request->query->get('format') == 'xml'){
+        } elseif ($request->query->get('format') == 'xml') {
             $xml = '<?xml version="1.0" encoding="UTF-8"?>';
             $xml .= '<posts>';
             foreach($data as $datum){
@@ -84,6 +84,12 @@ class PostController extends AbstractController
     public function new(Request $request): Response
     {
         $entityManager = $this->getDoctrine()->getManager();
+        if($request->request->get('title') == null){
+            return $this->json('Please provide Post title');
+        }
+        if($request->request->get('content') == null){
+            return $this->json('Please provide Post content');
+        }
 
         $post = new Post();
         $post->setTitle($request->request->get('title'));
@@ -107,13 +113,15 @@ class PostController extends AbstractController
             ->find($id);
 
         if (!$post) {
-            return $this->json('No post found for id' . $id, 404);
+            return $this->json('No post found for id ' . $id, 404);
         }
 
         $data = [
-            'id' => $post->getId(),
-            'name' => $post->getTitle(),
-            'description' => $post->getContent(),
+            'title' => $post->getTitle(),
+            'content' => $post->getContent(),
+            'created_at' => $post->getCreatedAt()->format('Y-m-d H:i:s'),
+            'publish_at' => $post->getPublishedAt() != null ? $post->getPublishedAt()->format('Y-m-d H:i:s') : null,
+            'status' => $post->isStatus(),
         ];
 
         return $this->json($data);
