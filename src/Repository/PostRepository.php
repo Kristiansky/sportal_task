@@ -17,11 +17,19 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class PostRepository extends ServiceEntityRepository
 {
+    /**
+     * @param ManagerRegistry $registry
+     */
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Post::class);
     }
 
+    /**
+     * @param Post $entity
+     * @param bool $flush
+     * @return void
+     */
     public function add(Post $entity, bool $flush = false): void
     {
         $this->getEntityManager()->persist($entity);
@@ -31,6 +39,11 @@ class PostRepository extends ServiceEntityRepository
         }
     }
 
+    /**
+     * @param Post $entity
+     * @param bool $flush
+     * @return void
+     */
     public function remove(Post $entity, bool $flush = false): void
     {
         $this->getEntityManager()->remove($entity);
@@ -40,6 +53,13 @@ class PostRepository extends ServiceEntityRepository
         }
     }
 
+    /**
+     * @param $active
+     * @param $page
+     * @param $day
+     * @return array
+     * @throws \Exception
+     */
     public function allPosts($active = 1, $page = 1, $day = null)
     {
         $qb = $this->createQueryBuilder('p')
@@ -48,7 +68,7 @@ class PostRepository extends ServiceEntityRepository
         ;
         if($day != null){
             $day = new \DateTime($day);
-            $qb->where('p.created_at > :from')
+            $qb->andWhere('p.created_at > :from')
                 ->andWhere('p.created_at < :to')
                 ->setParameter('from', $day->format('Y-m-d') . ' 00:00:00')
                 ->setParameter('to', $day->format('Y-m-d') . ' 23:59:59');

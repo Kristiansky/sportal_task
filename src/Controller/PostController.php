@@ -17,7 +17,7 @@ class PostController extends AbstractController
     /**
      * @Route("/post", name="post_index", methods={"GET"})
      */
-    public function index(Request $request): Response
+    public function index(Request $request)
     {
         $posts = $this->getDoctrine()
             ->getRepository(Post::class)
@@ -27,12 +27,54 @@ class PostController extends AbstractController
 
         foreach ($posts as $post) {
             $data[] = [
-                'id' => $post->getId(),
-                'name' => $post->getTitle(),
-                'description' => $post->getContent(),
+                'title' => $post->getTitle(),
+                'content' => $post->getContent(),
+                'created_at' => $post->getCreatedAt()->format('Y-m-d H:i:s'),
+                'publish_at' => $post->getPublishedAt() != null ? $post->getPublishedAt()->format('Y-m-d H:i:s') : null,
+                'status' => $post->isStatus(),
             ];
         }
+        if($request->query->get('format') == 'csv'){
+            $fp = fopen('php://temp', 'w');
+            foreach ($data as $datum) {
+                fputcsv($fp, $datum);
+            }
+            rewind($fp);
+            $response = new Response(stream_get_contents($fp));
+            fclose($fp);
+            $response->headers->set('Content-Type', 'text/csv');
+            $response->headers->set('Content-Disposition', 'attachment; filename="export.csv"');
 
+            return $response;
+        } elseif ($request->query->get('format') == 'xml'){
+            $xml = '<?xml version="1.0" encoding="UTF-8"?>';
+            $xml .= '<posts>';
+            foreach($data as $datum){
+                $xml .= '<post>';
+                $xml .=     '<title>';
+                $xml .=         $datum['title'];
+                $xml .=     '</title>';
+                $xml .=     '<content>';
+                $xml .=         htmlspecialchars($datum['content'], ENT_XML1, 'UTF-8');
+                $xml .=     '</content>';
+                $xml .=     '<created_at>';
+                $xml .=         $datum['created_at'];
+                $xml .=     '</created_at>';
+                $xml .=     '<publish_at>';
+                $xml .=         $datum['publish_at'];
+                $xml .=     '</publish_at>';
+                $xml .=     '<status>';
+                $xml .=         $datum['status'];
+                $xml .=     '</status>';
+                $xml .= '</post>';
+            }
+            $xml .= '</posts>';
+
+            $response = new Response($xml);
+            $response->headers->set('Content-Type', 'xml');
+
+            return $response;
+        }
         return $this->json($data);
     }
 
@@ -52,7 +94,7 @@ class PostController extends AbstractController
         $entityManager->persist($post);
         $entityManager->flush();
 
-        return $this->json('Created new project successfully with id ' . $post->getId());
+        return $this->json('Created new post successfully with id ' . $post->getId());
     }
 
     /**
@@ -65,7 +107,7 @@ class PostController extends AbstractController
             ->find($id);
 
         if (!$post) {
-            return $this->json('No project found for id' . $id, 404);
+            return $this->json('No post found for id' . $id, 404);
         }
 
         $data = [
